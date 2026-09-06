@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   analyseCsvFile,
@@ -7,7 +8,7 @@ import {
   checkInvoice,
   type AnalyseResponse,
 } from "@/app/actions/analyse";
-import type { Finding } from "@/lib/gst/types";
+import { FindingsTable } from "@/app/findings-table";
 
 interface InvoiceState {
   messages: string[];
@@ -74,7 +75,8 @@ export function Checker() {
           <div>
             <h2 className="text-lg font-semibold">Try the demo ledger</h2>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Eight sample lines with known GST coding mistakes. No login. Nothing is stored.
+              Eight sample lines with known GST coding mistakes. No login. A bookmarkable URL is
+              created only when this deploy has a database.
             </p>
           </div>
           <button
@@ -161,39 +163,14 @@ function ResultPanel({ result }: { result: AnalyseResponse }) {
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         {result.source}: {result.rowCount} rows, {result.findingCount} findings.
       </p>
-      {result.findings.length === 0 ? (
-        <p>No GST coding flags on this file. That is not a BAS lodgement sign-off.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="py-2 pr-3 font-medium">Line</th>
-                <th className="py-2 pr-3 font-medium">Code</th>
-                <th className="py-2 pr-3 font-medium">Description</th>
-                <th className="py-2 font-medium">What to look at</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.findings.map((finding) => (
-                <FindingRow key={`${finding.lineNumber}-${finding.code}`} finding={finding} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {result.checkId ? (
+        <p className="text-sm">
+          <Link className="underline underline-offset-2" href={`/checks/${result.checkId}`}>
+            Bookmark this check
+          </Link>
+        </p>
+      ) : null}
+      <FindingsTable findings={result.findings} />
     </section>
-  );
-}
-
-function FindingRow({ finding }: { finding: Finding }) {
-  const tone = finding.severity === "error" ? "text-red-800 dark:text-red-300" : "text-amber-800 dark:text-amber-300";
-  return (
-    <tr className="border-b border-zinc-100 align-top dark:border-zinc-900">
-      <td className="py-3 pr-3 tabular-nums">{finding.lineNumber}</td>
-      <td className={`py-3 pr-3 font-mono text-xs ${tone}`}>{finding.code}</td>
-      <td className="py-3 pr-3">{finding.description}</td>
-      <td className="py-3">{finding.message}</td>
-    </tr>
   );
 }

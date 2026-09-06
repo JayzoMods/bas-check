@@ -9,6 +9,7 @@ services:
       - "5432:5432"
     volumes:
       - bascheck_pg:/var/lib/postgresql/data
+      - ./drizzle/0000_init.sql:/docker-entrypoint-initdb.d/0000_init.sql:ro
 
 volumes:
   bascheck_pg:

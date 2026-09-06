@@ -17,7 +17,7 @@ This is **not** a BAS agent, not tax advice, and it does not lodge with the ATO.
    - ABN checksum failures (ABR modulus 89)
 3. Check one tax invoice: ABN checksum + 1/11 GST.
 
-Analyse runs **without a database** so `npm run dev` is enough for a recruiter. PostgreSQL + Drizzle schema is in the repo for persistence later.
+Analyse runs **without a database** so `npm run dev` is enough for a recruiter. When `DATABASE_URL` is set, a successful check is saved and you get a bookmarkable `/checks/[id]` URL. No accounts.
 
 ## CSV columns
 
@@ -35,11 +35,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Click **Load demo CSV**.
 
-Optional Postgres:
+Optional Postgres (bookmarkable `/checks/[id]`):
 
 ```bash
 docker compose up -d
-# then apply drizzle/0000_init.sql when you wire persistence
+npm run db:apply
+# DATABASE_URL is in .env.example — copy to .env.local
 ```
 
 ## Stack
@@ -47,8 +48,8 @@ docker compose up -d
 - Next.js 16 App Router, React 19, TypeScript
 - Tailwind CSS 4
 - Vitest on `src/lib/gst`
-- Drizzle ORM schema targeting PostgreSQL 18
-- GitHub Actions: test, lint, build
+- Drizzle ORM + PostgreSQL 18 (optional; analyse works without it)
+- GitHub Actions: apply schema, test (including a persist write), lint, build
 
 ## ABN method
 

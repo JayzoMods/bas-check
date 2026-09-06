@@ -12,6 +12,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // pg is a Node driver; bundling it on this Windows volume breaks Turbopack junctions.
+  serverExternalPackages: ["pg"],
   async headers() {
     return [
       {

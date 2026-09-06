@@ -1,13 +1,14 @@
 "use server";
 
 import { DEMO_CSV } from "@/data/demo-csv";
+import { persistCheck } from "@/db/checks";
 import { formatAbn, isValidAbn } from "@/lib/gst/abn";
 import { parseCsv } from "@/lib/gst/csv";
 import { gstFromInclusive, parseAudAmount } from "@/lib/gst/money";
 import { analyseRows } from "@/lib/gst/rules";
 import type { AnalyseResult } from "@/lib/gst/types";
 
-export type AnalyseOk = AnalyseResult & { ok: true; source: string };
+export type AnalyseOk = AnalyseResult & { ok: true; source: string; checkId: string | null };
 export type AnalyseErr = { ok: false; error: string };
 export type AnalyseResponse = AnalyseOk | AnalyseErr;
 
@@ -27,14 +28,15 @@ export async function analyseDemo(): Promise<AnalyseResponse> {
   return runAnalyse(DEMO_CSV, "demo-transactions.csv");
 }
 
-function runAnalyse(text: string, source: string): AnalyseResponse {
+async function runAnalyse(text: string, source: string): Promise<AnalyseResponse> {
   try {
     const rows = parseCsv(text);
     if (rows.length === 0) {
       return { ok: false, error: "No data rows. Need a header plus at least one transaction." };
     }
     const result = analyseRows(rows);
-    return { ok: true, source, ...result };
+    const checkId = await persistCheck({ filename: source, rows, findings: result.findings });
+    return { ok: true, source, checkId, ...result };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not read that CSV.";
     return { ok: false, error: message };
