@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: bascheck
+      POSTGRES_PASSWORD: bascheck
+      POSTGRES_DB: bascheck
+    ports:
+      - "5432:5432"
+    volumes:
+      - bascheck_pg:/var/lib/postgresql/data
+
+volumes:
+  bascheck_pg:

@@ -1,0 +1,10 @@
+export const DEMO_CSV = `date,description,amount,tax_code,gst_amount,amount_kind,abn
+2026-07-03,Bunnings Warehouse Auburn,110.00,GST,10.00,inclusive,51824753556
+2026-07-08,Westpac bank fee,15.00,GST,1.36,inclusive,
+2026-07-12,Client invoice — website build,2950.00,GST,295.00,inclusive,51824753556
+2026-07-18,Staff wages,2400.00,GST,218.18,inclusive,
+2026-07-21,Coffee with supplier,12.50,,,inclusive,
+2026-07-28,ATO integrated client account,820.00,BAS_EXCLUDED,74.55,inclusive,
+2026-08-02,Export sale GST-free,500.00,GST_FREE,45.45,inclusive,
+2026-08-09,Unknown supplier,88.00,GST,8.00,inclusive,00000000000
+`;
