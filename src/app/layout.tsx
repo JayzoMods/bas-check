@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -13,13 +14,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://bas-check.vercel.app"),
   title: "BAS Check",
   description:
     "Plain-English GST coding checks on an Australian CSV. Not a BAS agent. Not tax advice.",
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+/** CSP nonce is per request; a static prerender leaves scripts as nonce="$undefined". */
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  await headers();
   return (
     <html
       lang="en-AU"

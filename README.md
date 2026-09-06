@@ -2,6 +2,8 @@
 
 Plain-English GST coding checks on an Australian transaction CSV. Public portfolio web app for [Jayden O'Grady](https://ogdigitaldesigns.com.au) / OG Digital Designs.
 
+**Live demo (no login):** [https://bas-check.vercel.app](https://bas-check.vercel.app) — click **Load demo CSV**.
+
 This is **not** a BAS agent, not tax advice, and it does not lodge with the ATO.
 
 ## What it does
