@@ -23,7 +23,7 @@ export interface AbrLookupOptions {
   fetchImpl?: typeof fetch;
 }
 
-export function abrGuidFromEnv(env: NodeJS.ProcessEnv = process.env): string | undefined {
+export function abrGuidFromEnv(env: Record<string, string | undefined> = process.env): string | undefined {
   const guid = env.ABR_GUID?.trim();
   return guid ? guid : undefined;
 }

@@ -17,7 +17,7 @@ export const XERO_SESSION_MAX_AGE = 20 * 60;
 /** Browsers cap cookies near 4 KB. Refuse rather than store a truncated token. */
 export const XERO_SESSION_COOKIE_MAX = 3800;
 
-export function xeroConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
+export function xeroConfigured(env: Record<string, string | undefined> = process.env): boolean {
   return Boolean(
     env.XERO_CLIENT_ID?.trim() &&
       env.XERO_CLIENT_SECRET?.trim() &&
@@ -25,17 +25,17 @@ export function xeroConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
   );
 }
 
-export function xeroClientId(env: NodeJS.ProcessEnv = process.env): string | undefined {
+export function xeroClientId(env: Record<string, string | undefined> = process.env): string | undefined {
   const id = env.XERO_CLIENT_ID?.trim();
   return id ? id : undefined;
 }
 
-export function xeroClientSecret(env: NodeJS.ProcessEnv = process.env): string | undefined {
+export function xeroClientSecret(env: Record<string, string | undefined> = process.env): string | undefined {
   const secret = env.XERO_CLIENT_SECRET?.trim();
   return secret ? secret : undefined;
 }
 
-export function xeroRedirectUri(env: NodeJS.ProcessEnv = process.env): string | undefined {
+export function xeroRedirectUri(env: Record<string, string | undefined> = process.env): string | undefined {
   const uri = env.XERO_REDIRECT_URI?.trim();
   return uri ? uri : undefined;
 }

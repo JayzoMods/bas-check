@@ -30,7 +30,7 @@ export const invoiceExtractSchema = z.object({
 
 export type ExtractedInvoice = z.infer<typeof invoiceExtractSchema>;
 
-export function invoiceAiConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
+export function invoiceAiConfigured(env: Record<string, string | undefined> = process.env): boolean {
   return Boolean(env.AI_GATEWAY_API_KEY?.trim());
 }
 

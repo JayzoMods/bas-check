@@ -178,8 +178,8 @@ describe("Xero HTTP helpers", () => {
     const rows = await fetchInvoiceRows({ accessToken: "tok", tenantId: "ten" }, fetchImpl);
     expect(rows).toHaveLength(1);
     expect(rows[0]?.taxCode).toBe("GST");
-    expect(String(fetchImpl.mock.calls[0]?.[1]?.headers && (fetchImpl.mock.calls[0][1]?.headers as Record<string, string>)["Xero-tenant-id"])).toBe(
-      "ten",
-    );
+    const init = fetchImpl.mock.calls[0]?.[1];
+    const headers = init?.headers as Record<string, string> | undefined;
+    expect(headers?.["Xero-tenant-id"]).toBe("ten");
   });
 });
