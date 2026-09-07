@@ -7,7 +7,7 @@ import { describeAbrLookup, lookupAbnDetails } from "@/lib/gst/abr";
 import { parseCsv } from "@/lib/gst/csv";
 import { gstFromInclusive, parseAudAmount } from "@/lib/gst/money";
 import { analyseRows } from "@/lib/gst/rules";
-import type { AnalyseResult } from "@/lib/gst/types";
+import type { AnalyseResult, TransactionRow } from "@/lib/gst/types";
 
 export type AnalyseOk = AnalyseResult & { ok: true; source: string; checkId: string | null };
 export type AnalyseErr = { ok: false; error: string };
@@ -31,17 +31,23 @@ export async function analyseDemo(): Promise<AnalyseResponse> {
 
 async function runAnalyse(text: string, source: string): Promise<AnalyseResponse> {
   try {
-    const rows = parseCsv(text);
-    if (rows.length === 0) {
-      return { ok: false, error: "No data rows. Need a header plus at least one transaction." };
-    }
-    const result = analyseRows(rows);
-    const checkId = await persistCheck({ filename: source, rows, findings: result.findings });
-    return { ok: true, source, checkId, ...result };
+    return await analyseTransactionRows(parseCsv(text), source);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not read that CSV.";
     return { ok: false, error: message };
   }
+}
+
+export async function analyseTransactionRows(
+  rows: TransactionRow[],
+  source: string,
+): Promise<AnalyseResponse> {
+  if (rows.length === 0) {
+    return { ok: false, error: "No data rows. Need a header plus at least one transaction." };
+  }
+  const result = analyseRows(rows);
+  const checkId = await persistCheck({ filename: source, rows, findings: result.findings });
+  return { ok: true, source, checkId, ...result };
 }
 
 export interface InvoiceCheck {
@@ -53,11 +59,11 @@ export interface InvoiceCheck {
   messages: string[];
 }
 
-export async function checkInvoice(formData: FormData): Promise<InvoiceCheck | AnalyseErr> {
-  const abnRaw = String(formData.get("abn") ?? "");
-  const totalRaw = String(formData.get("total") ?? "");
-  const gstRaw = String(formData.get("gst") ?? "");
-
+export async function evaluateInvoice(
+  abnRaw: string,
+  totalRaw: string,
+  gstRaw: string,
+): Promise<InvoiceCheck> {
   const messages: string[] = [];
   const validAbn = isValidAbn(abnRaw);
   const digits = abnRaw.replace(/\D/g, "");
@@ -99,4 +105,12 @@ export async function checkInvoice(formData: FormData): Promise<InvoiceCheck | A
     gstMatches,
     messages,
   };
+}
+
+export async function checkInvoice(formData: FormData): Promise<InvoiceCheck | AnalyseErr> {
+  return evaluateInvoice(
+    String(formData.get("abn") ?? ""),
+    String(formData.get("total") ?? ""),
+    String(formData.get("gst") ?? ""),
+  );
 }
