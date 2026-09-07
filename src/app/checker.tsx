@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   analyseCsvFile,
   analyseDemo,
@@ -11,6 +11,7 @@ import {
 import { extractInvoice } from "@/app/actions/extract-invoice";
 import { analyseXero } from "@/app/actions/xero";
 import { FindingsTable } from "@/app/findings-table";
+import { FileField } from "@/components/file-field";
 
 interface InvoiceState {
   messages: string[];
@@ -31,6 +32,15 @@ export function Checker({ xeroEnabled, xeroConnected, xeroNotice }: CheckerProps
   const [abn, setAbn] = useState("");
   const [total, setTotal] = useState("");
   const [gst, setGst] = useState("");
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!result || !resultsRef.current) {
+      return;
+    }
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    resultsRef.current.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  }, [result]);
 
   async function handleDemo() {
     setPending("demo");
@@ -78,132 +88,139 @@ export function Checker({ xeroEnabled, xeroConnected, xeroNotice }: CheckerProps
   }
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8">
       <section className="grid gap-6 md:grid-cols-2">
-        <form action={handleCsv} className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+        <form
+          action={handleCsv}
+          className="card rise flex scroll-mt-24 flex-col gap-4 p-6"
+          id="check"
+          aria-busy={pending === "csv"}
+        >
           <div>
-            <h2 className="text-lg font-semibold">Upload a CSV</h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="font-mono text-xs tracking-[0.18em] text-gold">CSV</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold">Upload a CSV</h2>
+            <p className="mt-2 text-sm leading-6 text-muted">
               Columns: description, amount. Optional: date, tax_code, gst_amount, amount_kind, abn.
             </p>
           </div>
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            CSV file
-            <input
-              className="block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-zinc-900 file:px-3 file:py-2 file:text-white dark:file:bg-zinc-100 dark:file:text-zinc-900"
-              type="file"
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium" id="csv-file-label">
+              CSV file
+            </span>
+            <FileField
               name="csv"
               accept=".csv,text/csv"
               required
+              labelledBy="csv-file-label"
             />
-          </label>
-          <button
-            className="self-start rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-            type="submit"
-            disabled={pending !== null}
-          >
+          </div>
+          <button className="btn btn-primary self-start" type="submit" disabled={pending !== null}>
             {pending === "csv" ? "Checking…" : "Check CSV"}
           </button>
         </form>
 
-        <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="card rise-2 flex scroll-mt-24 flex-col gap-4 p-6" id="demo">
           <div>
-            <h2 className="text-lg font-semibold">Try the demo ledger</h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="font-mono text-xs tracking-[0.18em] text-gold">DEMO</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold">Try the demo ledger</h2>
+            <p className="mt-2 text-sm leading-6 text-muted">
               Eight sample lines with known GST coding mistakes. No login. A bookmarkable URL is
               created only when this deploy has a database.
             </p>
           </div>
           <button
-            className="self-start rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-zinc-700"
+            className="btn btn-ghost self-start"
             type="button"
             onClick={() => void handleDemo()}
             disabled={pending !== null}
           >
             {pending === "demo" ? "Checking…" : "Load demo CSV"}
           </button>
-          <a className="text-sm underline underline-offset-2" href="/demo-transactions.csv" download>
+          <a className="btn-link w-fit text-sm" href="/demo-transactions.csv" download>
             Download demo-transactions.csv
           </a>
         </div>
       </section>
 
-      <section className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="text-lg font-semibold">Check Xero invoices</h2>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Read-only. Pulls authorised and paid invoices from the last 90 days (up to 80 lines)
-          and runs the same GST rules as a CSV. This app does not write to Xero and does not
-          lodge a BAS.
+      <section className="card rise-3 scroll-mt-24 p-6" id="xero">
+        <p className="font-mono text-xs tracking-[0.18em] text-gold">XERO</p>
+        <h2 className="mt-2 font-display text-2xl font-semibold">Check Xero invoices</h2>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          Read-only. Pulls authorised and paid invoices from the last 90 days (up to 80 lines) and
+          runs the same GST rules as a CSV. This app does not write to Xero and does not lodge a
+          BAS.
         </p>
         {xeroNotice ? (
-          <p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300" role="status">
+          <p
+            className="mt-4 rounded-2xl border border-line bg-paper/60 px-4 py-3 text-sm"
+            role="status"
+          >
             {xeroNotice}
           </p>
         ) : null}
         {xeroEnabled ? (
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-3">
             {xeroConnected ? (
               <>
                 <button
-                  className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                  className="btn btn-primary"
                   type="button"
                   onClick={() => void handleXero()}
                   disabled={pending !== null}
                 >
                   {pending === "xero" ? "Checking…" : "Check connected org"}
                 </button>
-                <a className="text-sm underline underline-offset-2" href="/api/xero/disconnect">
+                <a className="btn-link text-sm" href="/api/xero/disconnect">
                   Disconnect
                 </a>
               </>
             ) : (
-              <a
-                className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-                href="/api/xero/start"
-              >
+              <a className="btn btn-primary" href="/api/xero/start">
                 Connect Xero (read-only)
               </a>
             )}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-4 text-sm text-muted">
             Off until this deploy has XERO_CLIENT_ID, XERO_CLIENT_SECRET, and XERO_REDIRECT_URI.
           </p>
         )}
       </section>
 
-      {result ? <ResultPanel result={result} /> : null}
+      {result ? (
+        <div ref={resultsRef} className="scroll-mt-24">
+          <ResultPanel result={result} />
+        </div>
+      ) : null}
 
-      <section className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="text-lg font-semibold">Check one tax invoice</h2>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          ABN checksum plus 1/11 GST on an inclusive total. Live ABR name and GST registration
-          only when this deploy has ABR_GUID. Photo/PDF read only when AI Gateway is configured.
-          The file is not stored. This is not Hubdoc.
+      <section className="card rise-4 scroll-mt-24 p-6" id="invoice">
+        <p className="font-mono text-xs tracking-[0.18em] text-gold">INVOICE</p>
+        <h2 className="mt-2 font-display text-2xl font-semibold">Check one tax invoice</h2>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          ABN checksum plus 1/11 GST on an inclusive total. Live ABR name and GST registration only
+          when this deploy has ABR_GUID. Photo/PDF read only when AI Gateway is configured. The file
+          is not stored. This is not Hubdoc.
         </p>
-        <form action={handleExtract} className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-          <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-medium">
-            Photo or PDF
-            <input
-              className="block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-zinc-900 file:px-3 file:py-2 file:text-white dark:file:bg-zinc-100 dark:file:text-zinc-900"
-              type="file"
+        <form action={handleExtract} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="text-sm font-medium" id="invoice-file-label">
+              Photo or PDF
+            </span>
+            <FileField
               name="invoice"
               accept="image/jpeg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf"
+              labelledBy="invoice-file-label"
             />
-          </label>
-          <button
-            className="self-start rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-zinc-700"
-            type="submit"
-            disabled={pending !== null}
-          >
+          </div>
+          <button className="btn btn-ghost" type="submit" disabled={pending !== null}>
             {pending === "extract" ? "Reading…" : "Read photo or PDF"}
           </button>
         </form>
-        <form action={handleInvoice} className="mt-4 grid gap-4 sm:grid-cols-3">
+        <form action={handleInvoice} className="mt-5 grid gap-4 sm:grid-cols-3">
           <label className="flex flex-col gap-1 text-sm font-medium">
             ABN
             <input
-              className="rounded-md border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700"
+              className="field"
               name="abn"
               value={abn}
               onChange={(event) => setAbn(event.target.value)}
@@ -215,7 +232,7 @@ export function Checker({ xeroEnabled, xeroConnected, xeroNotice }: CheckerProps
           <label className="flex flex-col gap-1 text-sm font-medium">
             Inclusive total (AUD)
             <input
-              className="rounded-md border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700"
+              className="field"
               name="total"
               value={total}
               onChange={(event) => setTotal(event.target.value)}
@@ -226,7 +243,7 @@ export function Checker({ xeroEnabled, xeroConnected, xeroNotice }: CheckerProps
           <label className="flex flex-col gap-1 text-sm font-medium">
             GST on invoice (AUD)
             <input
-              className="rounded-md border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700"
+              className="field"
               name="gst"
               value={gst}
               onChange={(event) => setGst(event.target.value)}
@@ -234,18 +251,19 @@ export function Checker({ xeroEnabled, xeroConnected, xeroNotice }: CheckerProps
               placeholder="10.00"
             />
           </label>
-          <button
-            className="self-start rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-            type="submit"
-            disabled={pending !== null}
-          >
+          <button className="btn btn-primary self-start" type="submit" disabled={pending !== null}>
             {pending === "invoice" ? "Checking…" : "Check invoice"}
           </button>
         </form>
         {invoice ? (
-          <ul className="mt-4 flex flex-col gap-1 text-sm">
+          <ul className="mt-5 flex flex-col gap-2">
             {invoice.messages.map((message) => (
-              <li key={message}>{message}</li>
+              <li
+                key={message}
+                className="rounded-2xl border border-line bg-paper/70 px-4 py-3 text-sm leading-6"
+              >
+                {message}
+              </li>
             ))}
           </ul>
         ) : null}
@@ -257,25 +275,47 @@ export function Checker({ xeroEnabled, xeroConnected, xeroNotice }: CheckerProps
 function ResultPanel({ result }: { result: AnalyseResponse }) {
   if (!result.ok) {
     return (
-      <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-100" role="alert">
+      <p
+        className="rounded-2xl border border-error/40 bg-error/10 px-4 py-3 text-sm text-error"
+        role="alert"
+      >
         {result.error}
       </p>
     );
   }
 
+  const clear = result.findingCount === 0;
+
   return (
-    <section className="flex flex-col gap-4">
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        {result.source}: {result.rowCount} rows, {result.findingCount} findings.
-      </p>
+    <section className="card p-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="font-mono text-xs tracking-[0.18em] text-gold">RESULT</p>
+          <h2 className="mt-2 font-display text-2xl font-semibold">{result.source}</h2>
+        </div>
+        <div className="flex gap-2">
+          <span className="rounded-full bg-paper px-3 py-1 text-sm font-medium">
+            {result.rowCount} rows
+          </span>
+          <span
+            className={`rounded-full px-3 py-1 text-sm font-medium ${
+              clear ? "bg-ok/15 text-ok" : "bg-warn/15 text-warn"
+            }`}
+          >
+            {result.findingCount} findings
+          </span>
+        </div>
+      </div>
       {result.checkId ? (
-        <p className="text-sm">
-          <Link className="underline underline-offset-2" href={`/checks/${result.checkId}`}>
+        <p className="mt-4 text-sm">
+          <Link className="btn-link" href={`/checks/${result.checkId}`}>
             Bookmark this check
           </Link>
         </p>
       ) : null}
-      <FindingsTable findings={result.findings} />
+      <div className="mt-5">
+        <FindingsTable findings={result.findings} />
+      </div>
     </section>
   );
 }

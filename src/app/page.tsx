@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { HowItWorks } from "@/components/how-it-works";
 import { parseXeroSession, XERO_SESSION_COOKIE, xeroConfigured } from "@/lib/xero/config";
 import { Checker } from "./checker";
 
@@ -29,32 +30,41 @@ export default async function Home({
   const xeroConnected = parseXeroSession(jar.get(XERO_SESSION_COOKIE)?.value) !== null;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-12">
-      <header className="flex flex-col gap-3">
-        <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">BAS Check</p>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          GST coding risks in plain English
-        </h1>
-        <p className="max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-400">
-          Upload a transaction CSV (or load the demo). The rules engine flags missing tax
-          codes, GST that does not match 1/11, GST on GST-free or BAS-excluded lines, and
-          ABN checksum failures. This is not a BAS agent and it does not lodge anything.
-        </p>
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-14 px-5 py-10 sm:px-6 sm:py-14">
+      <header className="rise grid gap-8 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
+        <div className="flex flex-col gap-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">Australian GST coding</p>
+          <h1 className="max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-6xl">
+            GST coding risks, <span className="italic text-teal">in plain English</span>
+          </h1>
+          <p className="max-w-2xl text-base leading-7 text-muted sm:text-lg">
+            Upload a transaction CSV, load the demo, or read Xero invoices. The rules engine flags
+            missing tax codes, GST that does not match 1/11, GST on GST-free or BAS-excluded lines,
+            and ABN checksum failures. This is not a BAS agent and it does not lodge anything.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <a className="btn btn-primary" href="#check">
+              Check a CSV
+            </a>
+            <a className="btn btn-ghost" href="#demo">
+              Try the demo
+            </a>
+          </div>
+        </div>
+        <aside className="card rise-2 p-5">
+          <p className="font-mono text-xs tracking-[0.18em] text-gold">LIVE DEMO</p>
+          <p className="mt-3 font-display text-2xl font-semibold">8 rows. 7 findings.</p>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Seeded ledger with known mistakes. No login. Recruiter-ready in one click.
+          </p>
+        </aside>
       </header>
+      <HowItWorks />
       <Checker
         xeroEnabled={xeroEnabled}
         xeroConnected={xeroConnected}
         xeroNotice={xeroNotice(params.xero)}
       />
-      <footer className="border-t border-zinc-200 pt-6 text-sm text-zinc-500 dark:border-zinc-800">
-        <p>
-          Jayden O&apos;Grady / OG Digital Designs. ABN checksum follows the ABR modulus-89
-          method. The invoice panel asks ABN Lookup for the entity name and GST
-          registration when ABR_GUID is set. Photo/PDF read uses AI Gateway when
-          configured. Xero invoice read is optional and read-only. GST math uses
-          nearest-cent 1/11. Not tax advice.
-        </p>
-      </footer>
     </div>
   );
 }
