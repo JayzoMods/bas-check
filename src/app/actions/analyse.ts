@@ -3,6 +3,7 @@
 import { DEMO_CSV } from "@/data/demo-csv";
 import { persistCheck } from "@/db/checks";
 import { formatAbn, isValidAbn } from "@/lib/gst/abn";
+import { describeAbrLookup, lookupAbnDetails } from "@/lib/gst/abr";
 import { parseCsv } from "@/lib/gst/csv";
 import { gstFromInclusive, parseAudAmount } from "@/lib/gst/money";
 import { analyseRows } from "@/lib/gst/rules";
@@ -65,7 +66,8 @@ export async function checkInvoice(formData: FormData): Promise<InvoiceCheck | A
   } else if (!validAbn) {
     messages.push("ABN fails the ABR checksum.");
   } else {
-    messages.push(`ABN ${formatAbn(digits)} passes the checksum. This is not an ABR live lookup.`);
+    const lookup = await lookupAbnDetails(digits);
+    messages.push(describeAbrLookup(lookup, formatAbn(digits)));
   }
 
   const total = parseAudAmount(totalRaw);

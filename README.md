@@ -15,9 +15,11 @@ This is **not** a BAS agent, not tax advice, and it does not lodge with the ATO.
    - GST recorded on GST-free or BAS-excluded lines
    - descriptions that often sit outside GST (bank fees, wages, super) but are coded GST
    - ABN checksum failures (ABR modulus 89)
-3. Check one tax invoice: ABN checksum + 1/11 GST.
+3. Check one tax invoice: ABN checksum + 1/11 GST. When `ABR_GUID` is set, that
+   panel also calls ABR `AbnDetails` (server-side) for the entity name, ABN status,
+   and GST registration date.
 
-Analyse runs **without a database** so `npm run dev` is enough for a recruiter. When `DATABASE_URL` is set, a successful check is saved and you get a bookmarkable `/checks/[id]` URL. No accounts.
+Analyse runs **without a database** so `npm run dev` is enough for a recruiter. When `DATABASE_URL` is set, a successful check is saved and you get a bookmarkable `/checks/[id]` URL. No accounts. Live ABR lookup is off until `ABR_GUID` is set — checksum still runs.
 
 ## CSV columns
 
@@ -33,6 +35,8 @@ npm test
 npm run dev
 ```
 
+`npm run dev` uses Webpack on this Windows volume because Turbopack cannot junction `pg` here. Vercel/CI Linux still uses the default `next build`.
+
 Open [http://localhost:3000](http://localhost:3000). Click **Load demo CSV**.
 
 Optional Postgres (bookmarkable `/checks/[id]`):
@@ -42,6 +46,10 @@ docker compose up -d
 npm run db:apply
 # DATABASE_URL is in .env.example — copy to .env.local
 ```
+
+Optional ABR live lookup (invoice panel): register for a GUID at
+[ABN Lookup web services](https://abr.business.gov.au/Documentation/WebServiceRegistration),
+then set `ABR_GUID` in `.env.local` and on Vercel. Never prefix it with `NEXT_PUBLIC_`.
 
 ## Stack
 
@@ -55,6 +63,10 @@ npm run db:apply
 
 [ABR Format of the ABN](https://abr.business.gov.au/Help/AbnFormat): subtract 1 from the first digit, weight `10,1,3,5,7,9,11,13,15,17,19`, sum modulus 89 must be 0. Worked example `51 824 753 556`.
 
+Live lookup (optional): server GET
+`https://abr.business.gov.au/json/AbnDetails.aspx` with `abn`, `callback`, and `guid`.
+The body is JSONP; it is parsed, not evaluated. The GUID never goes to the browser.
+
 ## Not in v1
 
-Xero OAuth, Hubdoc capture, BAS lodgement, live ABR JSON (needs a registered GUID), invoice photo OCR, Confirmation of Payee.
+Xero OAuth, Hubdoc capture, BAS lodgement, invoice photo OCR, Confirmation of Payee. CSV rows stay checksum-only (no bulk ABR calls).

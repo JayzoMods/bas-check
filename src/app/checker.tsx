@@ -98,7 +98,8 @@ export function Checker() {
       <section className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="text-lg font-semibold">Check one tax invoice</h2>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          ABN checksum plus 1/11 GST on an inclusive total. Not an ABR live lookup.
+          ABN checksum plus 1/11 GST on an inclusive total. Live ABR name and GST
+          registration only when this deploy has ABR_GUID.
         </p>
         <form action={handleInvoice} className="mt-4 grid gap-4 sm:grid-cols-3">
           <label className="flex flex-col gap-1 text-sm font-medium">

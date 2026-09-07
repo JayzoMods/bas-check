@@ -18,7 +18,9 @@ export default function Home() {
       <footer className="border-t border-zinc-200 pt-6 text-sm text-zinc-500 dark:border-zinc-800">
         <p>
           Jayden O&apos;Grady / OG Digital Designs. ABN checksum follows the ABR modulus-89
-          method. GST math uses nearest-cent 1/11. Not tax advice.
+          method. The invoice panel asks ABN Lookup for the entity name and GST
+          registration when ABR_GUID is set. GST math uses nearest-cent 1/11. Not tax
+          advice.
         </p>
       </footer>
     </div>
