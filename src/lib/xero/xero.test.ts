@@ -160,26 +160,24 @@ describe("Xero HTTP helpers", () => {
   });
 
   it("maps invoice JSON through fetchInvoiceRows", async () => {
-    const fetchImpl = vi.fn(
-      async () =>
-        new Response(
-          JSON.stringify({
-            Invoices: [
-              {
-                Status: "AUTHORISED",
-                Contact: { Name: "Example", TaxNumber: "51824753556" },
-                LineItems: [{ Description: "Paint", LineAmount: 55, TaxAmount: 5, TaxType: "INPUT" }],
-              },
-            ],
-          }),
-          { status: 200 },
-        ),
-    );
+    const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
+      const headers = init?.headers as Record<string, string> | undefined;
+      expect(headers?.["Xero-tenant-id"]).toBe("ten");
+      return new Response(
+        JSON.stringify({
+          Invoices: [
+            {
+              Status: "AUTHORISED",
+              Contact: { Name: "Example", TaxNumber: "51824753556" },
+              LineItems: [{ Description: "Paint", LineAmount: 55, TaxAmount: 5, TaxType: "INPUT" }],
+            },
+          ],
+        }),
+        { status: 200 },
+      );
+    });
     const rows = await fetchInvoiceRows({ accessToken: "tok", tenantId: "ten" }, fetchImpl);
     expect(rows).toHaveLength(1);
     expect(rows[0]?.taxCode).toBe("GST");
-    const init = fetchImpl.mock.calls[0]?.[1];
-    const headers = init?.headers as Record<string, string> | undefined;
-    expect(headers?.["Xero-tenant-id"]).toBe("ten");
   });
 });
