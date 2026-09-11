@@ -1,6 +1,6 @@
 # BAS Check
 
-Plain-English GST coding checks on an Australian transaction CSV. Public portfolio web app for [Jayden O'Grady](https://ogdigitaldesigns.com.au) / OG Digital Designs.
+Plain-English GST coding checks on an Australian transaction CSV. Public portfolio web app for [Jayden O'Grady](https://ogdigitaldesigns.com.au) / OG Digital Designs — free for anyone to use, and built as a live demo of that work for employers and clients to evaluate.
 
 **Live demo (no login):** [https://bas-check.vercel.app](https://bas-check.vercel.app) — click **Load demo CSV**.
 
